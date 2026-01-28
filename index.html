@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXTATION | Interactive Learning</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+        :root {
+            --bg-main: #02030b;
+            --bg-gradient: radial-gradient(circle at top, #1c1f3b 0%, #050716 45%, #02030b 100%);
+            --card-bg: rgba(15, 18, 40, 0.92);
+            --accent-cyan: #4ef2ff;
+            --accent-pink: #ff2f92;
+            --accent-green: #4dff9b;
+            --accent-yellow: #ffe25f;
+            --accent-purple: #aa5dff;
+            --accent-red: #ff4d4d;
+            --border-glow: rgba(120, 120, 255, 0.45);
+            --text-main: #ffffff;
+            --text-subtle: rgba(255, 255, 255, 0.65);
+        }
+
+        body {
+            background: var(--bg-main);
+            background-image: var(--bg-gradient);
+            color: var(--text-main);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        .neon-line {
+            height: 3px;
+            width: 100%;
+            background: linear-gradient(90deg, var(--accent-cyan), var(--accent-pink), var(--accent-yellow), var(--accent-green));
+            box-shadow: 0 0 15px var(--accent-cyan);
+            animation: pulse-width 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse-width {
+            0%, 100% { opacity: 0.8; }
+            50% { opacity: 1; filter: brightness(1.2); }
+        }
+
+        .teacher-orb {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, #fff, var(--accent-cyan) 40%, var(--accent-pink) 100%);
+            box-shadow: 0 0 20px var(--accent-cyan), inset 0 0 10px rgba(0,0,0,0.5);
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+
+        .teacher-orb:hover { transform: scale(1.1) rotate(5deg); }
+
+        .next-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-glow);
+            border-radius: 22px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        .tab-btn {
+            padding: 10px 15px;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid transparent;
+            transition: all 0.2s;
+            color: var(--text-subtle);
+            font-weight: 600;
+            font-size: 0.75rem;
+        }
+
+        .tab-btn.active {
+            background: rgba(78, 242, 255, 0.15);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        .tab-btn.completed { border-color: var(--accent-green); color: var(--accent-green); }
+
+        .lesson-selector {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            padding: 5px;
+            border-radius: 50px;
+            border: 1px solid var(--border-glow);
+            overflow-x: auto;
+            max-width: 100%;
+            scrollbar-width: none;
+        }
+        .lesson-pill {
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: var(--text-subtle);
+            white-space: nowrap;
+        }
+
+        .lesson-pill.active { background: var(--accent-pink); color: #fff; }
+
+        .neon-input {
+            background: rgba(0,0,0,0.3);
+            border: 2px solid var(--border-glow);
+            border-radius: 12px;
+            color: white;
+            padding: 15px;
+            width: 100%;
+            outline: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--accent-pink), var(--accent-cyan));
+            color: #050618;
+            font-weight: 800;
+            padding: 12px 24px;
+            border-radius: 50px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s ease-out; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .scenario-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px; }
+
+        .scenario-card {
+            background: linear-gradient(145deg, rgba(170, 93, 255, 0.1), rgba(255, 47, 146, 0.1));
+            border: 1px solid rgba(170, 93, 255, 0.3);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .language-note-box {
+            border-left: 4px solid var(--accent-yellow);
+            background: rgba(255, 226, 95, 0.05);
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.9rem;
+            color: var(--accent-yellow);
+            text-align: left;
+        }
+
+        .warning-box {
+            border-left: 4px solid var(--accent-red);
+            background: rgba(255, 77, 77, 0.1);
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 12px 12px 0;
+            font-size: 0.85rem;
+            color: #ff8080;
+            font-weight: 700;
+        }
+
+        .matching-item {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--border-glow);
+            border-radius: 10px;
+            padding: 10px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .matching-item.selected { border-color: var(--accent-cyan); background: rgba(78, 242, 255, 0.1); }
+        .matching-item.matched { border-color: var(--accent-green); background: rgba(77, 255, 155, 0.1); opacity: 0.5; pointer-events: none; }
+
+        .situation-btn {
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 800;
+            color: white;
+            text-transform: uppercase;
+            animation: pulse-border 2s infinite alternate;
+        }
+
+        .sit-casual-work { background: #4dff9b; color: #02030b; }
+        .sit-real-life { background: #ffe25f; color: #02030b; }
+        .sit-chat { background: #4ef2ff; color: #02030b; }
+        .sit-emails { background: #aa5dff; color: #fff; }
+        .sit-meetings { background: #ff2f92; color: #fff; }
+        .sit-strategic { background: #ff4d4d; color: #fff; }
+        .sit-all-hands { background: #4d88ff; color: #fff; }
+        .sit-high-stakes { background: #ff7700; color: #fff; }
+        .sit-reviews { background: #00d4ff; color: #02030b; }
+
+        .red-gradient-text {
+            background: linear-gradient(90deg, #ff4d4d, #f44336);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 800;
+            text-transform: uppercase;
+        }
+
+        .scenario-box {
+            background: rgba(255,255,255,0.05);
+            border-radius: 15px;
+            padding: 20px;
+            border: 1px dashed var(--accent-cyan);
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <header class="flex flex-col gap-6 mb-8">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-4">
+                    <div class="teacher-orb" id="teacherOrb"></div>
+                    <div>
+                        <h1 class="text-2xl font-black tracking-tighter" style="color: var(--accent-cyan);">NEXTATION</h1>
+                        <p class="text-[10px] uppercase tracking-[0.2em] text-pink-500 font-bold">Neural Language Interface</p>
+                    </div>
+                </div>
+                <div class="lesson-selector" id="lessonPills"></div>
+            </div>
+
+            <div class="text-center">
+                <h2 class="text-xl font-extrabold tracking-widest text-transparent bg-clip-text bg-gradient-to-r from-purple-500 to-pink-500 uppercase">Lego Disruptive Chain Method by Daby</h2>
+                <p class="text-cyan-400 font-bold text-xs mt-2 uppercase">Master professional communication in tech & business</p>
+            </div>
+
+            <div class="text-center md:text-left mt-4">
+                <p id="sectionLabel" class="text-xs font-bold text-cyan-400 mb-1 tracking-widest uppercase"></p>
+                <h2 id="mainHeading" class="text-3xl font-extrabold tracking-tight" style="color: var(--accent-yellow);"></h2>
+                <p class="red-gradient-text text-sm mt-2">Core Expressions</p>
+            </div>
+        </header>
+
+        <div class="neon-line mb-8"></div>
+
+        <nav class="flex flex-wrap gap-2 mb-8 justify-center">
+            <button onclick="switchTab(1)" id="tab-btn-1" class="tab-btn active">1. EXPRESSION</button>
+            <button onclick="switchTab(2)" id="tab-btn-2" class="tab-btn">2. WHEN TO USE</button>
+            <button onclick="switchTab(3)" id="tab-btn-3" class="tab-btn">3. SITUATIONS</button>
+            <button onclick="switchTab(4)" id="tab-btn-4" class="tab-btn">4. WRITE</button>
+            <button onclick="switchTab(5)" id="tab-btn-5" class="tab-btn">5. AUDIO</button>
+            <button onclick="switchTab(6)" id="tab-btn-6" class="tab-btn">6. PRACTICE</button>
+        </nav>
+
+        <main class="next-card p-6 md:p-10 min-h-[480px]">
+            <section id="tab-1" class="tab-content active text-center">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--accent-cyan);">What's the phrase?</h2>
+                <div class="max-w-md mx-auto space-y-4">
+                    <input type="text" id="expressionInput" class="neon-input text-xl md:text-2xl text-center font-bold" readonly>
+                    <button onclick="lockExpression()" class="btn-primary w-full mt-4">LOCK EXPRESSION 🔒</button>
+                    <p id="lockStatus" class="text-sm mt-4 text-green-400 hidden">Saved to your neural drive!</p>
+                </div>
+                <div id="expressionTip" class="mt-8 text-sm text-gray-500 uppercase tracking-widest"></div>
+                <div id="ruleNote" class="warning-box hidden"></div>
+            </section>
+
+            <section id="tab-2" class="tab-content text-center">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--accent-pink);">Meaning & Context</h2>
+                <div class="bg-black/40 p-6 rounded-xl border border-pink-500/30">
+                    <p id="meaningText" class="text-xl font-semibold mb-4 text-white"></p>
+                    <div id="contextText" class="text-gray-400 text-lg text-left leading-relaxed"></div>
+                    <div id="brazilianNote" class="language-note-box"></div>
+                </div>
+                <div class="flex flex-wrap gap-3 justify-center mt-6" id="situationContainer"></div>
+            </section>
+
+            <section id="tab-3" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6 text-center" style="color: var(--accent-purple);">Where to use it?</h2>
+                <div id="scenarioGrid" class="scenario-grid"></div>
+                <div class="scenario-box">
+                    <h3 class="text-cyan-400 font-bold uppercase text-xs mb-2">Visualizing the Scenario:</h3>
+                    <p id="visualScenario" class="text-sm text-gray-300 leading-relaxed italic"></p>
+                </div>
+                <div id="exampleUsage" class="mt-8 p-4 bg-purple-500/5 border border-purple-500/20 rounded-lg italic text-center text-gray-400"></div>
+            </section>
+
+            <section id="tab-4" class="tab-content">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--accent-yellow);">Write your sequence</h2>
+                <p id="writingChallenge" class="text-sm text-gray-400 mb-4 font-semibold uppercase tracking-wider"></p>
+                <textarea id="practiceWrite" class="neon-input h-48 resize-none text-lg" placeholder="Type your sentence here..."></textarea>
+                <div class="mt-4 flex justify-between items-center">
+                    <span class="text-xs text-gray-500">Auto-sync active...</span>
+                    <button onclick="completeTab(4)" class="text-green-400 text-xs font-bold uppercase">Mark Completed ✓</button>
+                </div>
+            </section>
+
+            <section id="tab-5" class="tab-content text-center">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--accent-green);">Neural Audio Check</h2>
+                <div class="flex flex-col items-center justify-center space-y-6">
+                    <span class="text-6xl">🗣️</span>
+                    <p id="audioInstruction" class="text-xl font-bold text-gray-300"></p>
+                    <button onclick="speakCurrent()" class="btn-primary flex items-center gap-3 px-8 py-4">
+                        <span>PLAY REFERENCE</span>
+                    </button>
+                </div>
+            </section>
+
+            <section id="tab-6" class="tab-content text-center">
+                <h2 class="text-2xl font-bold mb-6" style="color: var(--accent-red);">Match the Pairs!</h2>
+                <div id="matchBoard" class="grid grid-cols-2 gap-3 max-w-xl mx-auto"></div>
+                <div id="matchFeedback" class="mt-4 text-sm font-bold h-6"></div>
+                <button onclick="initMatchGame()" class="mt-4 text-[10px] text-gray-500 underline uppercase">Reset Game</button>
+            </section>
+        </main>
+    </div>
+
+    <script>
+        const lessons = {
+            1: { 
+                id: 'cutting-off-signal', 
+                label: 'Stage 00: Signal Integrity', 
+                section: 'Superior Technical Troubleshooting', 
+                expression: 'Sorry, you are cutting off.', 
+                meaning: '"A specific professional phrase used when the audio signal or connection is failing during a call or meeting."', 
+                context: 'Bright Explanation for "Sorry, you are cutting off": 1. Technical Precision: This phrase describes "Packet Loss" or unstable internet. It means the other person\'s voice is disappearing in fragments. 2. Active Voice: You use "You are cutting off" to indicate the problem is on *their* end or the connection itself. 3. Immediate Intervention: It prevents 5 minutes of talking that nobody can hear. \n\nExplicação Bilíngue (PT): 1. Precisão Técnica: Esta frase descreve falhas no áudio (picotando). Significa que a voz da outra pessoa está sumindo em fragmentos. 2. Voz Ativa: Usamos "You are cutting off" para indicar que o problema está na conexão deles ou no sinal em si. 3. Intervenção Imediata: Evita que alguém fale por 5 minutos sem que ninguém consiga ouvir.', 
+                tip: 'Tip: Use this as soon as the audio becomes "choppy" (picotado) to save time.', 
+                rule: 'CONVINCING FACTOR: Why use this? Because it distinguishes between "human interruption" and "technical failure." If you say "You are cutting me off," it sounds like they are being rude. If you say "You are cutting off," it sounds like the WiFi is failing. Using this correctly shows you understand technical nuances of global communication.',
+                brazilianNote: 'Refinamento Técnico: No Brasil, dizemos "Sua voz está cortando". Em inglês, não dizemos "Your voice is cutting". Dizemos "You are cutting off". É um uso idiomático essencial para parecer fluente em reuniões remotas.', 
+                scenarios: [{icon:'📶', title:'Weak WiFi', desc:'The signal drops to one bar.'}, {icon:'📞', title:'Phone Call', desc:'Audio becomes fragmented while driving or in a tunnel.'}], 
+                visualScenario: 'During a crucial Zoom call, the CEO starts to explain the budget, but his voice sounds like a robot and starts disappearing. You interject: "Sorry, you are cutting off. Could you repeat that?"',
+                example: '"Sorry, you are cutting off. I think your connection is unstable."', 
+                challenge: 'Next time someone\'s audio picota, say: "Sorry, you are cutting off."', 
+                audioInstruction: 'Polite, alert, and helpful.', 
+                situations: ['conventions-meetings', 'messages-chat', 'high-stakes'], 
+                matches: [['Cutting off', 'Voz falhando / Picotando'], ['Signal', 'Sinal'], ["Unstable", "Instável"]] 
+            },
+            2: { 
+                id: 'give-it-considerations', 
+                label: 'Stage 00: Decision Protocol', 
+                section: 'Superior Strategic Deliberation', 
+                expression: "I will give it some considerations.", 
+                meaning: '"A formal and authoritative way to signal that you need time to analyze a proposal or idea before making a final decision."', 
+                context: 'Bright Explanation for "I will give it some considerations": 1. Strategic Buffer: This phrase tells the other person that you are taking their idea seriously without committing immediately. 2. Analysis Mode: It signals that you are an analytical thinker who weighs pros and cons. 3. Authority Positioning: Instead of saying "I need to ask my boss," it sounds like *you* are the one doing the analyzing. \n\nExplicação Bilíngue (PT): 1. Amortecedor Estratégico: Esta frase diz à outra pessoa que você está levando a ideia a sério, sem se comprometer imediatamente. 2. Modo de Análise: Sinaliza que você é um pensador analítico que pesa prós e contras. 3. Posicionamento de Autoridade: Em vez de dizer "preciso perguntar ao meu chefe", soa como se *você* fosse quem está realizando a análise.', 
+                tip: 'Tip: Use this when a salesperson or colleague asks for a commitment on the spot.', 
+                rule: 'CONVINCING FACTOR: Why use this? Most people say "I\'ll think about it," which can sound dismissive or weak. "I will give it some considerations" elevates the conversation to a boardroom level. It proves you have a "process" for making decisions.',
+                brazilianNote: 'Refinamento Vocabular: Note que em contextos de negócios, "Numbers" (números) e "Figures" (cifras/números) são sinônimos. Se alguém te apresentar "the figures," use esta frase para mostrar que você vai analisá-las criteriosamente.', 
+                scenarios: [{icon:'🧠', title:'New Proposal', desc:'Receiving a project draft.'}, {icon:'📊', title:'Data Review', desc:'Analyzing the figures (numbers) provided.'}], 
+                visualScenario: 'A vendor finishes a complex presentation about a new software. They ask if you want to sign. You respond: "Thank you for the data. I will give it some considerations and get back to you."',
+                example: '"The plan looks solid, but I will give it some considerations before we finalize."', 
+                challenge: 'Next time someone pressures you for an answer, use: "I will give it some considerations."', 
+                audioInstruction: 'Thoughtful, calm, and high-status.', 
+                situations: ['strategic', 'high-stakes', 'reviews'], 
+                matches: [["Considerations", "Considerações / Análise"], ["Numbers/Figures", "Números / Cifras"], ["Give it", "Dedicar (a isso)"]] 
+            },
+            3: { 
+                id: 'couldnt-agree-more', 
+                label: 'Stage 00: Absolute Alignment', 
+                section: 'Superior Strategic Endorsement', 
+                expression: "I couldn't agree more.", 
+                meaning: '"An emphatic and professional way to state that you are in total, 100% agreement with what has just been said."', 
+                context: 'Bright Explanation for "I couldn\'t agree more": 1. The Superlative Shield: Because it uses "couldn\'t" (cannot), it means your agreement has reached its maximum level. There is no room for doubt. 2. Support Architecture: It is a powerful tool to support a boss or a colleague\'s idea, making you look like a team player with strong conviction. 3. Decisive Energy: It signals that the discussion on this point is over because the alignment is perfect. \n\nExplicação Bilíngue (PT): 1. O Escudo Superlativo: Como usa "couldn\'t" (não poderia), significa que seu acordo atingiu o nível máximo. Não há espaço para dúvidas. 2. Arquitetura de Apoio: É uma ferramenta poderosa para apoiar a ideia de um chefe ou colega, fazendo você parecer um jogador de equipe com forte convicção. 3. Energia Decisiva: Sinaliza que a discussão sobre este ponto acabou porque o alinhamento é perfeito.', 
+                tip: 'Tip: Use this to "echo" a key stakeholder. It creates an immediate psychological bond.', 
+                rule: 'CONVINCING FACTOR: Why use this? Brazilians often say "I agree with you," which is fine but a bit basic. "I couldn\'t agree more" is an Executive Expression. It shows that you aren\'t just following—you have analyzed the situation and arrived at the exact same high-level conclusion. It shows intelligence and alignment.',
+                brazilianNote: 'Dica para Brasileiros: Cuidado! Muitos brasileiros acham que "couldn\'t agree" soa como discordância por causa do "not". Na verdade, é o contrário: "Eu não poderia concordar MAIS" (pois já concordo totalmente). É a forma mais forte de dizer "concordo plenamente".', 
+                scenarios: [{icon:'🤝', title:'Executive Sync', desc:'Backing up a strategic proposal.'}, {icon:'🎯', title:'Target Setting', desc:'Confirming shared goals for the quarter.'}], 
+                visualScenario: 'In a meeting, your manager says: "We need to prioritize quality over speed this month." You lean in and say: "I couldn\'t agree more. Our reputation depends on it."',
+                example: '"That is an excellent point, Sarah. I couldn\'t agree more with that approach."', 
+                challenge: 'The next time you hear a great idea, don\'t just say "I agree." Say: "I couldn\'t agree more."', 
+                audioInstruction: 'Enthusiastic but controlled, professional, and certain.', 
+                situations: ['strategic', 'high-stakes', 'reviews', 'conventions-meetings'], 
+                matches: [['Couldn\'t agree', 'Não poderia concordar (mais)'], ['More', 'Mais / Além'], ['Alignment', 'Alinhamento']] 
+            },
+            6: { 
+                id: 'think-something-through', 
+                label: 'Stage 00: Deep Deliberation', 
+                section: 'Superior Analytical Positioning', 
+                expression: "It took me a bit. I had to think something through.", 
+                meaning: '"A sophisticated way to explain a delay in responding or deciding, highlighting that you were engaged in deep, critical analysis rather than simply being slow or forgetful."', 
+                context: 'Bright Explanation for "Think something through": 1. Analytical Depth: "Think through" implies examining every detail and potential consequence of a situation from start to finish. 2. Justifying the Gap: By saying "It took me a bit," you acknowledge the time passed, but you pivot immediately to the *quality* of your thinking. 3. High-Value Response: It signals to the other party that their inquiry was complex enough to deserve your full intellectual focus. \n\nExplicação Bilíngue (PT): 1. Profundidade Analítica: "Think through" implica examinar cada detalhe e consequência potencial de uma situação, do início ao fim. 2. Justificando o Intervalo: Ao dizer "It took me a bit", você reconhece o tempo passado, mas muda o foco imediatamente para a *qualidade* do seu raciocínio. 3. Resposta de Alto Valor: Sinaliza que a pergunta da outra parte era complexa o suficiente para merecer seu foco intelectual total.', 
+                tip: 'Tip: Use this as an opening when replying to an email or message that you haven\'t answered in a few days.', 
+                rule: 'CONVINCING FACTOR: Why use this? Because "I was busy" sounds disorganized, and "I forgot" sounds unprofessional. "I had to think something through" positions you as a strategic thinker. It turns a "late response" into a "deliberate response." It proves you value accuracy and strategy over mere speed.',
+                brazilianNote: 'Refinamento Executivo: Brasileiros tendem a se desculpar excessivamente por atrasos ("Sorry for the delay"). Mude o "frame": use "It took me a bit. I had to think something through." Isso mostra que o atraso foi necessário para uma análise superior. Você deixa de ser "quem atrasou" e passa a ser "quem pensou melhor".', 
+                scenarios: [{icon:'🧠', title:'Strategic Delay', desc:'Replying to a complex stakeholder request.'}, {icon:'📝', title:'Proposal Review', desc:'Taking time to spot risks in a contract.'}], 
+                visualScenario: 'A colleague pings you about a strategy you haven\'t replied to yet. Instead of apologizing for being busy, you say: "It took me a bit to reply because I had to think some of the technical implications through. Here is my view..."',
+                example: '"I haven\'t ignored your message; it just took me a bit. I had to think something through regarding the Q4 budget."', 
+                challenge: 'Next time you take more than 24 hours to answer a complex question, start with: "It took me a bit. I had to think something through."', 
+                audioInstruction: 'Calm, thoughtful, and confident.', 
+                situations: ['strategic', 'high-stakes', 'emails', 'messages-chat'], 
+                matches: [['Took me a bit', 'Levei um tempinho'], ['Think through', 'Pensar/Analisar profundamente'], ['Deliberate', 'Deliberado / Intencional']] 
+            },
+            7: { 
+                id: 'bring-up-visual', 
+                label: 'Stage 00: Visual Navigation', 
+                section: 'Superior Content Retrieval', 
+                expression: "Can you bring up this picture again?", 
+                meaning: '"A technical command used in virtual or physical presentations to request that a specific image, chart, or slide be re-displayed on the screen for deeper analysis."', 
+                context: 'Bright Explanation for "Bring up this picture": 1. Phrasal Verb Power: "Bring up" is the specific professional term for displaying digital content. It sounds more native than "show" or "put." 2. Data Auditing: This phrase signals that you are paying close attention to visual evidence and want to verify a specific detail or "figure" (number). 3. Directing the Flow: It positions you as an active participant who has the authority to pause the presentation to ensure total clarity. \n\nExplicação Bilíngue (PT): 1. Poder do Phrasal Verb: "Bring up" é o termo profissional específico para exibir conteúdo digital (na tela). Soa muito mais natural e fluente do que "show" ou "put". 2. Auditoria de Dados: Esta frase sinaliza que você está prestando muita atenção às evidências visuais e quer verificar um detalhe específico ou um "figure" (número). 3. Direcionando o Fluxo: Posiciona você como um participante ativo que tem autoridade para pausar a apresentação para garantir clareza total.', 
+                tip: 'Tip: Use "Bring up" whenever you want something displayed on the shared screen (Zoom, Teams, etc.).', 
+                rule: 'CONVINCING FACTOR: Why use this? Because in the tech world, data is king. If you simply say "Go back," it sounds like you are lost. If you say "Can you bring up this picture again?", it sounds like you are analyzing. It proves you have a "keen eye" for visuals and technical specifics. It forces the presenter to stop and address your specific inquiry, increasing your visibility.',
+                brazilianNote: 'Refinamento Técnico: No Brasil, dizemos "Pode colocar aquela imagem na tela de novo?". Em inglês executivo, usamos o phrasal verb "BRING UP". É o comando padrão para apresentações remotas. Dominar esse vocabulário de navegação visual demonstra que você está perfeitamente adaptado ao ambiente de trabalho global e digital.', 
+                scenarios: [{icon:'🖼️', title:'Slide Revisit', desc:'Analyzing a complex architecture diagram again.'}, {icon:'📊', title:'Chart Analysis', desc:'Comparing Q3 vs Q4 figures on a graph.'}], 
+                visualScenario: 'The presenter moved quickly past a slide with the new database schema. You noticed something odd. You interject: "Wait, sorry to interrupt. Can you bring up this picture again? I want to look at the primary key structure."',
+                example: '"That was a lot of info on the last slide. Can you bring up this picture again so we can discuss the cloud costs?"', 
+                challenge: 'Next time someone moves too fast through a presentation, say: "Can you bring up this picture/slide again?"', 
+                audioInstruction: 'Polite, curious, and authoritative.', 
+                situations: ['conventions-meetings', 'strategic', 'high-stakes'], 
+                matches: [['Bring up', 'Exibir na tela'], ['Picture/Slide', 'Imagem / Slide'], ['Again', 'De novo / Novamente']] 
+            },
+            8: { 
+                id: 'make-pitch-time', 
+                label: 'Stage 00: Gatekeeper Authority', 
+                section: 'Superior Time Stewardship', 
+                expression: "You have 20 minutes to make your pitch.", 
+                meaning: '"A dominant and highly professional command used to set a clear time boundary for a presentation or proposal, establishing the speaker as the decision-maker or primary stakeholder."', 
+                context: 'Bright Explanation for "You have 20 minutes": 1. The Clock as a Weapon: Setting the time limit immediately tells the presenter that your time is valuable. 2. Pitch Culture: A "pitch" is more than a presentation; it\'s a persuasive argument for an idea, product, or budget. 3. Psychological Dominance: By stating the time frame, you are defining the rules of engagement. You aren\'t just a spectator; you are the one holding the stopwatch. \n\nExplicação Bilíngue (PT): 1. O Relógio como Arma: Definir o limite de tempo diz imediatamente ao apresentador que o seu tempo é valioso. 2. Cultura de Pitch: Um "pitch" é mais do que uma apresentação; é um argumento persuasivo para uma ideia, produto ou orçamento. 3. Dominância Psicológica: Ao declarar o intervalo de tempo, você está definindo as regras do jogo. Você não é apenas um espectador; você é quem segura o cronômetro.', 
+                tip: 'Tip: Say this with a slight smile but a steady voice. It shows you are open to the idea but strictly manage your agenda.', 
+                rule: 'CONVINCING FACTOR: Why use this? In the corporate world, the person who controls the schedule controls the power. Most people wait for the presenter to finish. An executive starts by saying "You have X minutes." This forces the presenter to prioritize their best points and proves you are a "High-Value" individual with a packed schedule. It commands immediate respect.',
+                brazilianNote: 'Assertividade e Poder: No Brasil, temos o hábito de deixar as apresentações correrem soltas para sermos "educados". Em inglês de negócios, a verdadeira educação é respeitar o tempo alheio. Usar "You have [X] minutes to make your pitch" demonstra que você é um líder ocupado e focado em resultados.', 
+                scenarios: [{icon:'⏱️', title:'Vendor Meeting', desc:'Setting limits for a sales representative.'}, {icon:'💡', title:'Idea Submission', desc:'Reviewing a new feature proposal from a dev team.'}], 
+                visualScenario: 'A new startup founder joins the meeting to sell their API. Before they start, you lean forward and say: "Welcome. We are excited to see what you have. You have 20 minutes to make your pitch. We\'ll save the rest for Q&A."',
+                example: '"Thanks for joining us today. You have 20 minutes to make your pitch before our next sync."', 
+                challenge: 'The next time someone asks for your time to "show you something," respond with: "Sure, you have [X] minutes to make your pitch."', 
+                audioInstruction: 'Direct, crisp, and welcoming yet firm.', 
+                situations: ['conventions-meetings', 'strategic', 'high-stakes', 'reviews'], 
+                matches: [['Make a pitch', 'Apresentar uma proposta/ideia'], ['Time Stewardship', 'Gestão do Tempo'], ['Gatekeeper', 'O "Porteiro" / Quem controla o acesso']] 
+            }
+        };
+
+        const sitConfig = {
+            'casual-work': { cls: 'sit-casual-work', label: 'Casual @ Work' },
+            'casual-real-life': { cls: 'sit-real-life', label: 'Real Life' },
+            'messages-chat': { cls: 'sit-chat', label: 'Messages & Chat' },
+            'emails': { cls: 'sit-emails', label: 'Emails' },
+            'conventions-meetings': { cls: 'sit-meetings', label: 'Conventions' },
+            'high-stakes': { cls: 'sit-high-stakes', label: 'Critical Presentation' },
+            'reviews': { cls: 'sit-reviews', label: 'Performance Review' },
+            'strategic': { cls: 'sit-strategic', label: 'Strategic Update' },
+            'all-hands': { cls: 'sit-all-hands', label: 'All-Hands Meeting' }
+        };
+
+        let currentId = 8; 
+        let selectedMatch = null;
+
+        function init() {
+            const container = document.getElementById('lessonPills');
+            Object.keys(lessons).forEach(key => {
+                const p = document.createElement('div');
+                p.className = 'lesson-pill';
+                p.id = `pill-${key}`;
+                p.textContent = `Exp ${key.toString().padStart(2, '0')}`;
+                p.onclick = () => loadLesson(key);
+                container.appendChild(p);
+            });
+            loadLesson(8); 
+        }
+
+        function loadLesson(id) {
+            currentId = id;
+            const data = lessons[id];
+            
+            document.querySelectorAll('.lesson-pill').forEach(p => p.classList.toggle('active', p.id === `pill-${id}`));
+            document.getElementById('sectionLabel').textContent = data.label;
+            document.getElementById('mainHeading').textContent = data.section;
+            document.getElementById('expressionInput').value = data.expression;
+            document.getElementById('expressionTip').textContent = data.tip;
+            document.getElementById('meaningText').textContent = data.meaning;
+            
+            const contextEl = document.getElementById('contextText');
+            if (data.context.includes('1.')) {
+                contextEl.innerHTML = data.context.split(/(\d\.)/).map(part => {
+                    return part.match(/\d\./) ? `<br><br><strong>${part}</strong>` : part;
+                }).join('');
+            } else {
+                contextEl.textContent = data.context;
+            }
+            
+            document.getElementById('brazilianNote').innerHTML = data.brazilianNote;
+            document.getElementById('writingChallenge').textContent = data.challenge;
+            document.getElementById('audioInstruction').textContent = data.audioInstruction;
+            document.getElementById('exampleUsage').textContent = data.example;
+            
+            const visualEl = document.getElementById('visualScenario');
+            if (data.visualScenario) {
+                visualEl.parentElement.classList.remove('hidden');
+                visualEl.textContent = data.visualScenario;
+            } else {
+                visualEl.parentElement.classList.add('hidden');
+            }
+
+            const ruleBox = document.getElementById('ruleNote');
+            if (data.rule) {
+                ruleBox.textContent = data.rule;
+                ruleBox.classList.remove('hidden');
+            } else {
+                ruleBox.classList.add('hidden');
+            }
+
+            const sitCont = document.getElementById('situationContainer');
+            sitCont.innerHTML = '';
+            data.situations.forEach(s => {
+                const cfg = sitConfig[s];
+                if (cfg) sitCont.innerHTML += `<div class="situation-btn ${cfg.cls}">${cfg.label}</div>`;
+            });
+
+            const scCont = document.getElementById('scenarioGrid');
+            scCont.innerHTML = data.scenarios.map(s => `
+                <div class="scenario-card">
+                    <span class="text-3xl block mb-2">${s.icon}</span>
+                    <h4 class="font-bold text-cyan-400 text-sm">${s.title}</h4>
+                    <p class="text-[10px] text-gray-400 mt-1">${s.desc}</p>
+                </div>
+            `).join('');
+
+            initMatchGame();
+            switchTab(1);
+        }
+
+        function switchTab(num) {
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(`tab-${num}`).classList.add('active');
+            document.getElementById(`tab-btn-${num}`).classList.add('active');
+        }
+
+        function lockExpression() {
+            const s = document.getElementById('lockStatus');
+            s.classList.remove('hidden');
+            document.getElementById('tab-btn-1').classList.add('completed');
+            setTimeout(() => s.classList.add('hidden'), 2000);
+        }
+
+        function completeTab(n) {
+            document.getElementById(`tab-btn-${n}`).classList.add('completed');
+        }
+
+        function speakCurrent() {
+            const utter = new SpeechSynthesisUtterance(lessons[currentId].expression);
+            utter.lang = 'en-US';
+            utter.rate = 0.95;
+            window.speechSynthesis.speak(utter);
+        }
+
+        function initMatchGame() {
+            const data = lessons[currentId];
+            const board = document.getElementById('matchBoard');
+            board.innerHTML = '';
+            document.getElementById('matchFeedback').textContent = '';
+            selectedMatch = null;
+
+            let pool = [];
+            data.matches.forEach((m, idx) => {
+                pool.push({ text: m[0], pairId: idx, type: 'en' });
+                pool.push({ text: m[1], pairId: idx, type: 'pt' });
+            });
+            pool.sort(() => Math.random() - 0.5);
+
+            pool.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'matching-item';
+                div.textContent = item.text;
+                div.onclick = () => handleMatch(div, item);
+                board.appendChild(div);
+            });
+        }
+
+        function handleMatch(el, item) {
+            if (el.classList.contains('matched') || el.classList.contains('selected')) return;
+
+            if (!selectedMatch) {
+                selectedMatch = { el, item };
+                el.classList.add('selected');
+            } else {
+                if (selectedMatch.item.pairId === item.pairId && selectedMatch.item.type !== item.type) {
+                    el.classList.add('matched');
+                    selectedMatch.el.classList.add('matched');
+                    document.getElementById('matchFeedback').textContent = 'Match found! ⚡';
+                    if (document.querySelectorAll('.matching-item.matched').length === (lessons[currentId].matches.length * 2)) {
+                        document.getElementById('matchFeedback').textContent = 'Neural link stabilized! ✓';
+                        completeTab(6);
+                    }
+                } else {
+                    selectedMatch.el.classList.remove('selected');
+                    document.getElementById('matchFeedback').textContent = 'Link failed. Try again.';
+                }
+                selectedMatch = null;
+            }
+        }
+
+        window.onload = init;
+    </script>
+</body>
+</html>
